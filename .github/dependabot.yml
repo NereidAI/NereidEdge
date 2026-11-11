@@ -21,11 +21,8 @@ updates:
       prefix: "chore"
       include: "scope"
 
-  - package-ecosystem: "docker"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
-    commit-message:
-      prefix: "chore"
-      include: "scope"
+# The "docker" ecosystem is intentionally absent. Dependabot cannot page
+# through public.ecr.aws tag listings (the registry answers the pagination
+# request with 401 and the updater fails with status 429), so every weekly
+# run would fail. The Dockerfile base images are pinned to exact versions
+# and reviewed manually instead.
