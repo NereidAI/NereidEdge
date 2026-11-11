@@ -1,0 +1,17 @@
+# Copyright (C) 2026 YIQISOFT
+# SPDX-License-Identifier: Apache-2.0
+
+.tmp/
+dist/
+
+# Locally built binary
+/nereid-edge
+
+# Local environment files with credentials; use .env.example as the template
+.env
+.env.k3s
+.env.token
+.env.tls
+
+# Local build acceleration fragment; use local.mk.example as the template
+/local.mk

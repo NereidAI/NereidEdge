@@ -1,0 +1,72 @@
+# Copyright (C) 2026 YIQISOFT
+# SPDX-License-Identifier: Apache-2.0
+
+services:
+  nereid-edge:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        GOPROXY: ${GOPROXY:-}
+        ALPINE_MIRROR: ${ALPINE_MIRROR:-}
+        VERSION: ${NEREIDEDGE_VERSION:-0.0.0-dev}
+        GIT_SHA: ${GIT_SHA:-dev}
+    image: ghcr.io/nereidai/nereidedge:${NEREIDEDGE_VERSION:-0.0.0-dev}
+    # Rebuild the image from source before every start so local edits are
+    # picked up without a manual `docker compose build`.
+    pull_policy: build
+    container_name: nereid-edge
+    restart: unless-stopped
+    ports:
+      - "59750:59750"
+    volumes:
+      - ./res:/app/res:ro
+      # Encrypted Edge Secret store (ADR-0034). Keep it on a named volume so
+      # copies survive container restarts; pair it with a stable KeyFile when
+      # persistence is required (an empty KeyFile uses an ephemeral key).
+      - nereid-edge-data:/app/data
+    environment:
+      - EDGEX_SECURITY_SECRET_STORE=false
+      - WRITABLE_LOGLEVEL=INFO
+      # Push local configuration into core-keeper on startup (required on first run
+      # so the NereidEdge custom section is seeded). Remove/set false after first
+      # successful registration if keeper should remain the source of truth.
+      - EDGEX_OVERWRITE_CONFIG=true
+      - SERVICE_HOST=0.0.0.0
+      # NereidLink gateway custom configuration (path-style EdgeX env overrides)
+      - NEREIDEDGE_BROKERURL=${NEREID_BROKER_URL}
+      - NEREIDEDGE_CREDENTIALID=${NEREID_CRED_ID}
+      - NEREIDEDGE_CREDENTIALSECRET=${NEREID_CRED_SECRET}
+      # Set true to enable per-packet paho MQTT traces (very verbose).
+      - NEREIDEDGE_MQTTTRACE=${NEREID_MQTT_TRACE:-false}
+      # Optional TLS materials for a tls:// NereidLink broker. Mount the PEM
+      # files (for example in docker-compose.override.yaml) and point these at
+      # the in-container paths. Empty values keep the system trust store and
+      # id/secret authentication.
+      - NEREIDEDGE_ROOTCAFILE=${NEREID_ROOT_CA_FILE:-}
+      - NEREIDEDGE_CLIENTCERTFILE=${NEREID_CLIENT_CERT_FILE:-}
+      - NEREIDEDGE_CLIENTKEYFILE=${NEREID_CLIENT_KEY_FILE:-}
+      # Inline PEM alternatives to the file paths above. Prefer the mounted
+      # files: with EDGEX_OVERWRITE_CONFIG=true these values are seeded into
+      # core-keeper and remain visible in the process environment.
+      - NEREIDEDGE_ROOTCAPEM=${NEREID_ROOT_CA_PEM:-}
+      - NEREIDEDGE_CLIENTCERTPEM=${NEREID_CLIENT_CERT_PEM:-}
+      - NEREIDEDGE_CLIENTKEYPEM=${NEREID_CLIENT_KEY_PEM:-}
+      - NEREIDEDGE_INSECURESKIPVERIFY=${NEREID_INSECURE_SKIP_VERIFY:-false}
+    # Bound the host-side stdout log. Without this the json-file driver grows
+    # without limit; the in-container rotated file is a separate sink.
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - edgex-network
+
+networks:
+  edgex-network:
+    external: true
+    name: edgex_edgex-network
+
+volumes:
+  nereid-edge-data:

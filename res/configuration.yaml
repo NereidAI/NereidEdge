@@ -1,0 +1,220 @@
+# Copyright (C) 2026 YIQISOFT
+# SPDX-License-Identifier: Apache-2.0
+
+Writable:
+  LogLevel: "DEBUG"
+
+  InsecureSecrets:
+    HTTPS:
+      path: "https"
+      Secrets:
+        cert: ""
+        key: ""
+
+Service:
+  Host: localhost
+  Port: 59750
+  StartupMsg: "NereidEdge Application Service (M0) has started"
+
+HttpServer:
+  Protocol: "http"
+  SecretName: "https"
+  HTTPSCertName: "cert"
+  HTTPSKeyName: "key"
+
+Clients:
+  core-data:
+    Protocol: "http"
+    Host: "localhost"
+    Port: 59880
+  core-command:
+    UseMessageBus: true
+
+MessageBus:
+  Disabled: false
+  Optional:
+    ClientId: "nereid-edge"
+
+Trigger:
+  # NereidEdge has no response/back-pipeline; the empty value keeps the SDK
+  # default response topic.
+  PublishTopic: ""
+
+# Retained for EdgeX App Services SDK template compatibility. NereidEdge does
+# not read this value; NereidEdge.DeviceMap, connector bindings, and the uplink
+# filters determine which events are processed.
+ApplicationSettings:
+  DeviceNames: "Simple-Device01,Random-Float-Device,Random-Integer-Device"
+
+# NereidLink gateway configuration in the custom NereidEdge section.
+NereidEdge:
+  BrokerURL: "tcp://localhost:1883"
+  # Required in every authentication mode, including mTLS: it is the MQTT
+  # CONNECT username for password auth and names the X509 credential for
+  # certificate auth. It must match the credential ID registered in
+  # NereidLink; a client certificate alone is not sufficient.
+  CredentialID: ""
+  # Password/token secret. Leave empty when authenticating with an X509
+  # client certificate.
+  CredentialSecret: ""
+  EdgeID: ""
+  DeviceMap: ""
+  # Skip events from EdgeX devices with no known NL binding (recommended).
+  ForwardUnmapped: false
+  # Log intended connector actions without mutating EdgeX metadata.
+  ConnectorObserve: false
+  # EdgeX core-command base URL; defaults to http://edgex-core-command:59882.
+  CoreCommandURL: ""
+  # Set true for paho per-packet MQTT traces (very verbose; transport forensics only).
+  MQTTTrace: false
+  # TLS materials for the NereidLink MQTT connection. BrokerURL must use a
+  # tls:// URL for any of these to take effect. A public-CA certificate needs
+  # no extra setting: the container trust store is used. Each material can be
+  # delivered as a mounted file path (*File) or as inline PEM text (*PEM,
+  # typically via an NEREIDEDGE_* environment override); inline PEM wins when
+  # both are set. In YAML write inline PEM with a block scalar (|) or a
+  # double-quoted string containing \n; in a .env file use one line with
+  # literal \n separators, which the agent converts to real newlines.
+  # Prefer files for private material: with
+  # EDGEX_OVERWRITE_CONFIG=true env-overridden values are seeded into
+  # core-keeper, and process env is visible via docker inspect.
+  #
+  # Inline PEM examples (commented; uncomment and replace the placeholder
+  # text). Block-scalar form keeps the real PEM line breaks:
+  #
+  #   RootCAPEM: |
+  #     -----BEGIN CERTIFICATE-----
+  #     MIIB...CA bundle...
+  #     -----END CERTIFICATE-----
+  #
+  # Equivalent double-quoted one-liner (YAML turns \n into real newlines):
+  #
+  #   RootCAPEM: "-----BEGIN CERTIFICATE-----\nMIIB...CA bundle...\n-----END CERTIFICATE-----\n"
+  #
+  # mTLS pair, same delivery mode for both halves:
+  #
+  #   ClientCertPEM: |
+  #     -----BEGIN CERTIFICATE-----
+  #     MIIB...client cert...
+  #     -----END CERTIFICATE-----
+  #   ClientKeyPEM: |
+  #     -----BEGIN PRIVATE KEY-----
+  #     MIIE...private key...
+  #     -----END PRIVATE KEY-----
+  #
+  # PEM CA bundle pinning the broker certificate (private CA).
+  RootCAFile: ""
+  RootCAPEM: ""
+  # X.509 client certificate and key for mTLS; the cert and key must be set
+  # together and use the same delivery mode (both inline or both files).
+  # CredentialID remains mandatory and must name this X509 credential in
+  # NereidLink; the gateway rejects an empty CredentialID at startup.
+  ClientCertFile: ""
+  ClientKeyFile: ""
+  ClientCertPEM: ""
+  ClientKeyPEM: ""
+  # Disable broker certificate verification. Lab brokers only; never enable
+  # in production. Pin a private CA with RootCAFile/RootCAPEM instead.
+  InsecureSkipVerify: false
+  # EdgeX message-bus watcher: push device profile add/update events to
+  # NereidLink as core-metadata reports them, instead of waiting for the
+  # periodic full scan. Empty fields default to the EdgeX reference bus
+  # (mqtt://edgex-mqtt-broker:1883, base topic "edgex"). The 5-minute full
+  # scan remains as a safety net, so a bus failure degrades gracefully.
+  ProfileWatch:
+    Enabled: true
+    Type: ""
+    Protocol: ""
+    Host: ""
+    Port: 0
+    BaseTopic: ""
+  # Sub-device reachability monitor: verify reachability with a real read
+  # before announcing online, and withdraw offline devices after N failures.
+  # The probe read is kept off the message bus (ds-pushevent=false) while its
+  # event is returned for a non-empty readings check (ds-returnevent=true).
+  HealthCheck:
+    Enabled: false
+    IntervalS: 30
+    FailureThreshold: 3
+    ProbeTimeoutS: 10
+  # Local link-health watchdog (ADR-0026): track transport episodes locally,
+  # exclude planned shutdowns and detect flapping. The episode report uplink
+  # to NL rides on the future v1/gateway/linkhealth protocol extension.
+  LinkWatch:
+    Enabled: true
+    FlapWindowS: 600
+    FlapThreshold: 5
+  # Edge Secret delivery (ADR-0034): store the platform-delivered secret
+  # copies encrypted at rest. The store is written only when Enabled is true.
+  # KeyFile points at an operator-provisioned 32-byte AES-256 key (raw or
+  # base64); leave it empty to generate an ephemeral in-memory key, in which
+  # case the encrypted store is unreadable after restart and the platform
+  # re-delivers the full set on reconnect.
+  Secrets:
+    Enabled: true
+    StoreDir: /app/data
+    KeyFile: ""
+    # onvif-basic credentials are delivered to device-onvif-camera: the data
+    # lands in its secret store via POST /api/v3/secret and the camera mapping
+    # is written into its AppCustom config in core-keeper. Leave these empty to
+    # select the EdgeX docker-network addresses.
+    OnvifServiceURL: ""
+    KeeperURL: ""
+    OnvifKVSBase: ""
+  # Device profile downlink (ADR-0038): receive tenant library profiles
+  # pushed by NereidLink on v1/gateway/profiles/spec. EdgeX-format documents
+  # are upserted idempotently into local core-metadata; neutral documents and
+  # the applied-revision ledger land as profiles-down.json under StoreDir.
+  # Only explicit "removing" entries delete profiles; missing entries never
+  # do. The feature is advertised in the hello optional set, so an older
+  # platform simply ignores it.
+  ProfileDelivery:
+    Enabled: true
+    StoreDir: /app/data
+  # Edge model inference bridge (ADR-0039). NereidEdge itself is a neutral
+  # channel and performs no inference; enable this only when an inference
+  # device service (NereidInference) is deployed beside the stack. It then
+  # advertises the optional "inference" hello feature and bridges that
+  # service's model inventory into the manifest models segment.
+  Inference:
+    Enabled: true
+    # Inference protocol families the deployed inference plane speaks, in
+    # preference order. Protocol families only ("kserve"/"openai"), never
+    # silicon or vendor names; empty at runtime defaults to kserve+openai.
+    Backends:
+      - kserve
+      - openai
+    # NereidEdge bridges these NereidInference device-service objects; it does
+    # not call an inference runtime or consume model packages itself.
+    DeviceService: device-inference
+    ManagerDevice: nereid-inference
+    ModelsResource: ModelsJSON
+    InventoryPollS: 30
+    ShadowPollS: 30
+    BindingPollS: 10
+    # Durable identity/delete ledger for opaque manager resources. Pipeline
+    # definitions themselves remain NI-owned and are not copied to this store.
+    ManagerStoreDir: /app/data
+    # Display-only inference server endpoint carried in the shadow runtime
+    # block; Phase A runtime health is derived from manager-device reads.
+    RuntimeEndpoint: edgex-ovms:9000
+    # Stream bindings (source.mode=stream) POST the camera's onvif-basic
+    # credential to NereidInference under the same secret name, so ffmpeg can
+    # authenticate the federated RTSP subscription. Leave empty to select the
+    # docker-network defaults; the values are edge-local and never appear in
+    # a connector config, a protocol property or a log line.
+    ServiceURL: ""
+    KVSBase: ""
+  # Whole-gateway operation sources (ADR-0035). An unset source leaves the
+  # matching operation advertised but failing with a clear error; an empty
+  # Services map suppresses service.restart entirely.
+  Operations:
+    # Size-rotated agent log sys.logs_tail tails with secret redaction. The
+    # container entrypoint writes this same path (see docs/logging.md). Empty
+    # disables the op and file capture.
+    LogFile: /app/data/logs/nereid-edge.log
+    # PEM northbound mTLS identity certificate for sys.cert_info. Empty
+    # disables the op.
+    IdentityCertFile: ""
+    # Allowlisted service name -> systemd unit for service.restart.
+    Services: {}

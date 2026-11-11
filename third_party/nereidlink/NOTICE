@@ -1,0 +1,10 @@
+NereidLink
+Copyright 2026 YIQISOFT
+
+This product includes software developed by YIQISOFT.
+
+This product bundles or depends on third-party software and data under other
+licenses. The bundled database image contains TimescaleDB Community Edition
+under the Timescale License (TSL); see THIRD_PARTY_NOTICES for the component
+list, the TSL terms (in particular the prohibition on offering TimescaleDB
+as a hosted database service), and all other third-party notices.

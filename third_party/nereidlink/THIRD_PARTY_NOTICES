@@ -1,0 +1,167 @@
+Third-Party Notices for NereidLink
+Copyright (C) 2026 YIQISOFT
+
+NereidLink itself is licensed under the Apache License, Version 2.0 (see
+LICENSE). This file lists third-party software and data that NereidLink
+bundles, links, or requires for operation, together with the licenses that
+govern them. The NereidLink application binary contains only permissively
+licensed code; the one source-available component (TimescaleDB Community
+Edition) runs as a separate database process and is never linked into the
+application.
+
+For the exact, machine-generated dependency lists, use:
+
+    go list -m all           # Go modules compiled into the binary/tools
+    (cd web && npm ls)       # npm packages used to build the web console
+
+--------------------------------------------------------------------------
+1. TimescaleDB Community Edition  --  Timescale License (TSL)   [important]
+--------------------------------------------------------------------------
+
+The bundled PostgreSQL images ship the TimescaleDB extension:
+
+    timescale/timescaledb:2.17.2-pg16
+        official image, re-pushed as nereidai/timescaledb:2.17.2-pg16
+        (standalone / docker-compose path; deploy/images/postgres/Dockerfile)
+    nereidai/postgresql:16.4-timescale-tsl
+        CloudNativePG image extending the CNPG catalog PostgreSQL 16.4 with
+        the TimescaleDB 2.26.4 community .deb from the packagecloud repo
+        (deploy/images/postgres/Dockerfile.cnpg)
+
+The PostgreSQL engine itself is under the PostgreSQL License (a permissive
+MIT/BSD-style license). The TimescaleDB extension is dual-licensed:
+
+    * TimescaleDB Apache-2 Edition  -> Apache License 2.0 (OSI open source)
+    * TimescaleDB Community Edition -> Timescale License (TSL),
+      source-available but NOT an OSI-approved open-source license.
+
+The images above are the Community Edition and contain "-tsl" binaries.
+NereidLink relies on Community-Edition features:
+
+    * hypertables, create_hypertable(), drop_chunks()
+        -- these core functions are also in the Apache-2 edition;
+    * continuous aggregates (ts_telemetry_hourly, ts_telemetry_daily),
+        refresh_continuous_aggregate(), add_continuous_aggregate_policy()
+        -- TSL only (introduced in schema migration 0024);
+    * native columnar compression and add_compression_policy()
+        -- TSL only (migration 0024);
+    * add_retention_policy()
+        -- TSL only (migration 0036, accounting_topn).
+
+What TSL permits.  You may run Community Edition free of charge, including
+commercially and as part of a hosted service, provided NereidLink is offered
+as a VALUE-ADDED product or service: it is an IoT platform, not a hosted
+time-series database; users cannot run DDL or otherwise define or modify the
+TimescaleDB schema themselves (the schema is managed exclusively by NereidLink
+migrations). Private/on-premise redistribution inside the product is allowed.
+
+What TSL prohibits.  You may NOT offer TimescaleDB Community Edition itself
+as a hosted/managed database-as-a-service (or otherwise expose its
+data-definition/data-manipulation interfaces to third parties as a database
+service), and you may not redistribute modified TSL source or binaries. To
+offer a managed database service you must use TimescaleDB Apache-2 Edition,
+which does not provide continuous aggregates, compression, or retention
+policies and therefore cannot run the current schema migrations unchanged.
+
+Redistribution obligations (TSL section 2.1(b)).  When you redistribute the
+bundled database image you must: (1) tell recipients it includes TimescaleDB
+Community Edition under the Timescale License and provide the license text or
+the URL below; (2) keep recipients from defining/modifying the TimescaleDB
+schema (NereidLink enforces this technically); and (3) refer to the component
+as "TimescaleDB Community Edition" (and "TimescaleDB Apache-2 Edition" for
+the Apache build).
+
+License text and details:
+    https://www.timescale.com/legal/licenses
+    https://github.com/timescale/timescaledb/blob/main/tsl/LICENSE-TIMESCALE
+
+NereidLink only communicates with PostgreSQL over SQL; no TSL code is compiled
+or linked into the NereidLink binary, so the NereidLink source remains
+Apache-2.0. The TSL-licensed functions are isolated in database migrations
+0024/0036 and the rollup/retention paths; the rest of the product does not
+depend on them.
+
+--------------------------------------------------------------------------
+2. Components vendored in this repository
+--------------------------------------------------------------------------
+
+Swagger UI  (docs/api/swaggerui/)
+    Apache License 2.0. Copyright SmartBear Software Inc. and contributors.
+    The vendored LICENSE file is kept alongside the assets.
+
+caniuse-lite dataset (build-time, via autoprefixer/browserslist)
+    Creative Commons Attribution 4.0 (CC-BY-4.0). Data from caniuse.com.
+    This is compatibility data used while building the web console; it is not
+    shipped as a standalone dataset. Attribution: caniuse-lite by Ben Briggs,
+    browser support data (c) caniuse.com contributors, CC-BY-4.0.
+
+--------------------------------------------------------------------------
+3. Go modules compiled into the NereidLink binary
+--------------------------------------------------------------------------
+
+All third-party Go modules linked into the production binary are under
+permissive licenses (Apache-2.0, MIT, BSD-2/3-Clause, or ISC), except one
+dual-licensed MQTT client:
+
+Eclipse Paho MQTT Go client  (github.com/eclipse/paho.mqtt.golang)
+    Dual-licensed under the Eclipse Public License v2.0 and the Eclipse
+    Distribution License v1.0 (EDL-1.0, a BSD-style permissive license).
+    NereidLink uses it under the EDL-1.0.
+    https://www.eclipse.org/legal/epl-2.0/
+    https://www.eclipse.org/org/documents/edl-v10.php
+
+Representative other dependencies, grouped by the license verified in each
+module's LICENSE file:
+
+    Apache-2.0   nats-io/nats.go, minio/minio-go/v7, prometheus/client_golang,
+                 google.golang.org/grpc, tetratelabs/wazero, plgd-dev/go-coap/v3,
+                 coreos/go-oidc/v3, dgraph-io/ristretto, santhosh-tekuri/
+                 jsonschema/v5, spf13/cobra, klauspost/compress (also MIT),
+                 gopkg.in/yaml.v3 (also MIT)
+    MIT          mochi-mqtt/server/v2, jackc/pgx/v5, golang-migrate/migrate/v4,
+                 dop251/goja
+    BSD 2/3      google/uuid, xuri/excelize/v2, twmb/franz-go,
+                 rabbitmq/amqp091-go, golang.org/x/crypto, golang.org/x/sync,
+                 google.golang.org/protobuf
+    ISC          coder/websocket
+
+Note on development tools.  The module graph also pulls in build/lint tools
+that are NOT compiled into or distributed with NereidLink, including MPL-2.0
+HashiCorp libraries used only by tooling and several AGPL-3.0 golangci-lint
+plugins (go-header, grouper, musttag, sloglint, structtags, gosmopolitan).
+AGPL/MPL copyleft does not apply because these tools are executed at build
+time only and their code is absent from the released binary and images.
+
+--------------------------------------------------------------------------
+4. Web console npm packages
+--------------------------------------------------------------------------
+
+All npm packages used to build the web console (roughly 400 transitive
+packages) are under permissive OSI licenses: MIT, Apache-2.0, BSD-2/3-Clause,
+ISC, 0BSD, BlueOak-1.0.0, or Python-2.0. Representative direct dependencies:
+
+    MIT          React, Ant Design, @ant-design/icons, axios, dayjs,
+                 i18next / react-i18next, TanStack Query, Zustand,
+                 @xyflow/react, react-grid-layout, react-router-dom,
+                 qrcode.react, react-markdown, remark-gfm
+    Apache-2.0   ECharts (and echarts-for-react, MIT)
+
+--------------------------------------------------------------------------
+5. Infrastructure run alongside NereidLink (separate images, not linked)
+--------------------------------------------------------------------------
+
+PostgreSQL            PostgreSQL License (permissive)
+NATS Server           Apache License 2.0
+distroless base images Apache License 2.0
+Go toolchain          BSD 3-Clause
+SeaweedFS (optional, self-provided S3-compatible store)  Apache License 2.0
+
+These are independent processes/images. If you bring your own managed
+PostgreSQL, make sure its TimescaleDB edition matches the schema features
+above (migrations 0024/0036 require Community Edition / TSL).
+
+--------------------------------------------------------------------------
+
+If you need the verbatim license texts or a full dependency-SBOM, regenerate
+them from the repository with `go list -m all`, `npm ls`, and the dependency
+LICENSE files, or contact the maintainers.

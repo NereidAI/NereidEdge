@@ -1,0 +1,19 @@
+# Copyright (C) 2026 YIQISOFT
+# SPDX-License-Identifier: Apache-2.0
+
+node_modules
+npm-debug.log
+Dockerfile*
+docker-compose*
+.dockerignore
+.git
+.gitignore
+.env
+*/bin
+*/obj
+README.md
+.vscode
+.tmp
+dist
+docs
+*.md

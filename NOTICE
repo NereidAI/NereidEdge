@@ -1,0 +1,41 @@
+NereidEdge
+Copyright 2026 YIQISOFT
+
+This product includes software developed by YIQISOFT.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+this product except in compliance with the License. You may obtain a copy of
+the License at:
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Upstream Project Acknowledgment
+
+This product is an EdgeX Foundry Application Service built on top of the
+EdgeX app-functions-sdk-go and go-mod-* support libraries. EdgeX Foundry is a
+vendor-neutral open-source edge Internet of Things framework hosted by the
+Linux Foundation (website: https://www.edgexfoundry.io/, source code:
+https://github.com/edgexfoundry) and is licensed under the Apache License,
+Version 2.0. This product integrates with EdgeX Foundry through its published
+APIs and libraries and does not redistribute EdgeX Foundry source code. This
+product is an independent work and is not part of, or endorsed by, EdgeX
+Foundry or the Linux Foundation.
+
+Third-Party Weak Copyleft Dependencies
+
+This product statically links the following third-party Go modules. Their
+file-level copyleft licenses apply only to the source files distributed under
+those licenses and do not change the Apache-2.0 license terms of this product:
+
+- github.com/eclipse/paho.mqtt.golang, dual-licensed under the Eclipse Public
+  License v2.0 (EPL-2.0) and the Eclipse Distribution License v1.0 (EDL-1.0).
+- github.com/hashicorp/errwrap, licensed under the Mozilla Public License
+  v2.0 (MPL-2.0).
+- github.com/hashicorp/go-multierror, licensed under the Mozilla Public
+  License v2.0 (MPL-2.0).
+
+This product depends on additional third-party open-source components, each
+distributed under its own license. The reviewed NereidLink device SDK mirror
+under third_party/nereidlink retains its upstream LICENSE, NOTICE, and
+THIRD_PARTY_NOTICES files. Other dependency license texts are available in the
+respective upstream repositories.

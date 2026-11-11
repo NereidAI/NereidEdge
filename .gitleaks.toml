@@ -1,0 +1,14 @@
+# Copyright (C) 2026 YIQISOFT
+# SPDX-License-Identifier: Apache-2.0
+#
+# Extend the built-in gitleaks ruleset with a narrow allowlist for the PEM
+# placeholders used in the TLS documentation. The regex matches only the
+# explicit ellipsis placeholder text, so any real key material is still
+# reported.
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Placeholder PEM examples in documentation (ellipsis markers, not key material)"
+regexes = ['''MIIE\.\.\.private key\.\.\.''']

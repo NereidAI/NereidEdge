@@ -1,0 +1,29 @@
+# Copyright (C) 2026 YIQISOFT
+# SPDX-License-Identifier: Apache-2.0
+
+services:
+  nereid-edge:
+    environment:
+      - NEREIDEDGE_BROKERURL=tcp://mosquitto:1883
+      - NEREIDEDGE_CREDENTIALID=${NEREID_CRED_ID}
+      - NEREIDEDGE_CREDENTIALSECRET=${NEREID_CRED_SECRET}
+      - NEREIDEDGE_EDGEID=${NEREID_EDGE_ID}
+      - NEREIDEDGE_DEVICEMAP=${NEREID_DEVICE_MAP}
+      # Private-CA / mTLS example for a tls:// broker. Create ./certs on the
+      # host with the PEM files; the mount is read-only and the paths match
+      # the NEREID_* variables in .env.example. NEREID_CRED_ID stays required
+      # and must match the X509 credential ID registered in NereidLink.
+      # - NEREIDEDGE_BROKERURL=tls://mosquitto:8883
+      # - NEREIDEDGE_CREDENTIALID=${NEREID_CRED_ID}
+      # - NEREIDEDGE_ROOTCAFILE=/app/certs/ca.pem
+      # - NEREIDEDGE_CLIENTCERTFILE=/app/certs/client.crt
+      # - NEREIDEDGE_CLIENTKEYFILE=/app/certs/client.key
+      # Inline PEM alternative (YAML block scalar preserves the line breaks);
+      # file delivery is preferred for private material.
+      # - NEREIDEDGE_ROOTCAPEM: |
+      #     -----BEGIN CERTIFICATE-----
+      #     ...
+      #     -----END CERTIFICATE-----
+    volumes:
+      # Merge with the base Compose mounts; certs never live in the image.
+      - ./certs:/app/certs:ro
