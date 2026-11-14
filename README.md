@@ -2,6 +2,15 @@
 
 # NereidEdge
 
+[![CI](https://github.com/NereidAI/NereidEdge/actions/workflows/ci.yml/badge.svg)](https://github.com/NereidAI/NereidEdge/actions/workflows/ci.yml)
+[![Dev Images](https://github.com/NereidAI/NereidEdge/actions/workflows/publish-dev.yml/badge.svg)](https://github.com/NereidAI/NereidEdge/actions/workflows/publish-dev.yml)
+[![DCO](https://github.com/NereidAI/NereidEdge/actions/workflows/dco.yml/badge.svg)](https://github.com/NereidAI/NereidEdge/actions/workflows/dco.yml)
+[![License](https://img.shields.io/github/license/NereidAI/NereidEdge)](LICENSE)
+[![Architectures](https://img.shields.io/badge/arch-amd64%20%7C%20arm64-627185?logo=linux&logoColor=white)](https://github.com/NereidAI/NereidEdge/actions/workflows/release.yml)
+[![Go](https://img.shields.io/badge/Go-1.27-00ADD8?logo=go&logoColor=white)](go.mod)
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-fe519e?logo=conventionalcommits&logoColor=white)](https://www.conventionalcommits.org/)
+[![GHCR image](https://img.shields.io/badge/GHCR-image-2496ED?logo=docker&logoColor=white)](https://github.com/NereidAI/NereidEdge/pkgs/container/nereidedge)
+
 NereidEdge is an EdgeX Foundry Application Service, built with App Functions
 SDK Go v4.0.2, that connects EdgeX southbound devices and companion services to
 NereidLink through the MQTT gateway protocol `v1/gateway/*` (ADR-0026).
