@@ -9,7 +9,7 @@ require (
 	github.com/edgexfoundry/app-functions-sdk-go/v4 v4.0.2
 	github.com/edgexfoundry/go-mod-core-contracts/v4 v4.0.3
 	github.com/edgexfoundry/go-mod-messaging/v4 v4.0.3
-	github.com/labstack/echo/v4 v4.16.5
+	github.com/labstack/echo/v4 v4.16.6
 	github.com/nereidai/nereidlink/sdk/device/go v0.0.0-00010101000000-000000000000
 )
 
